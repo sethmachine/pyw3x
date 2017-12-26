@@ -38,7 +38,7 @@ an output directory.
 ```python
 import archive
 
-infile = 'Test.w3x'
+infile = 'data/test/Test.w3x'
 mode = 'r' #use 'w' to enable writing
 
 with archive.open_archive(infile, mode) as handle:
@@ -48,4 +48,17 @@ with archive.open_archive(infile, mode) as handle:
     outdir = 'archive-extracted'
     a.extract_all_files(outdir, listfile)
 ```
+
+```
+ls archive-extracted
+lists.txt		war3map.w3e		war3map.wts
+war3map.doo		war3map.w3i		war3mapMap.blp
+war3map.j		war3map.w3r		war3mapMisc.txt
+war3map.mmp		war3map.wct		war3mapSkin.txt
+war3map.shd		war3map.wpm		war3mapUnits.doo
+war3map.w3c		war3map.wtg
+```
+
+
+
 
