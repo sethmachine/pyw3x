@@ -50,7 +50,7 @@ with archive.open_archive(infile, mode) as handle:
 ```
 
 ```
-ls archive-extracted
+$ ls archive-extracted
 lists.txt		war3map.w3e		war3map.wts
 war3map.doo		war3map.w3i		war3mapMap.blp
 war3map.j		war3map.w3r		war3mapMisc.txt
