@@ -137,13 +137,7 @@ def truncate(f, n):
     return '.'.join([i, (d+'0'*n)[:n]])
 
 if __name__ == '__main__':
-    i = '/Users/sddworman/desktop'
-    f = absolute_filepaths(i, -1, r'.+?\.txt')
-    for x in f:
-        with open(x, 'r') as v:
-            t = v.read()
-            if 'nxserver' in t:
-                print(x)
+    pass
     
     
 
