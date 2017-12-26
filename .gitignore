@@ -1,0 +1,6 @@
+.pyc
+.log
+logs/
+.DS_Store
+.idea
+.idea/
