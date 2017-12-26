@@ -10,7 +10,7 @@ SCRIPT_PATH = os.path.dirname(__file__)
 MAC_STORM = os.path.join(SCRIPT_PATH, 'data/storm/libStorm.dylib')
 
 STORM = ctypes.cdll.LoadLibrary(MAC_STORM)
-STORM_VERBOSE = True
+STORM_VERBOSE = False
 
 def _errcheck(result, func, args):
     if STORM_VERBOSE:
