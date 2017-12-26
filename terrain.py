@@ -109,8 +109,12 @@ class Terrain():
         return outfile
 
 
+    def to_json(self):
+        return vars(self)
+
     def describe(self):
         print(json.dumps(vars(self), indent=1))
+
 
 
 
@@ -121,4 +125,5 @@ if __name__ == '__main__':
     d = t.read()
     t.describe()
     t.write('data/test/foof.w3e')
+    json.dump(t.to_json(), open('w3e.json', 'w'), indent=1)
 
