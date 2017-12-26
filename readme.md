@@ -29,8 +29,8 @@ on the [StormLib GitHub repository](https://github.com/ladislav-zezula/StormLib)
 
 An `Archive` class is provided in *archive.py*.  A context manager is used to handle
 opening and closing of a provided archive, therefore all archive operations should
-occur with the context scope.  Note that strings in Python 3.6.x by default unicode--
-these need to be explicitly encoded as `ascii` when passed to the StormLib API, e.g. `mystring.encode('ascii)`.
+occur with the context scope.  Note that strings in Python 3.6.x by default are unicode--
+these need to be explicitly encoded as `ascii` when passed to the StormLib API, e.g. `mystring.encode('ascii')`.
 
 Below is an example that extracts all the files from the archive `listfile` into 
 an output directory.  
