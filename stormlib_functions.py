@@ -17,6 +17,8 @@ def _errcheck(result, func, args):
         print('ERRCHECK', result, func, args)
     return result
 
+def GetLastError():
+    return STORM['GetLastError']()
 
 def SFileSetLocale(lcNewLocale):
     """

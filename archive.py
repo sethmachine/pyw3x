@@ -29,7 +29,7 @@ def open_archive(infile, mode='r'):
         raise Exception(msg)
     msg = 'Successfully opened archive {}'.format(infile)
     STORM_LOG.debug(msg)
-    yield handle
+    yield Archive(infile, handle, mode)
     ret = stormlib.SFileCloseArchive(handle)
     if ret == 0:
         msg = 'Failed to close archive {} with error code {}'.format(infile, ret)
@@ -45,6 +45,11 @@ def read_listfile(listfile):
             if out:
                 yield out
 
+def write_listfile(data, outfile):
+    with open(outfile, 'w') as f:
+        f.write('\n'.join(data))
+        f.write('\n')
+
 class Archive():
     def __init__(self, infile, handle, mode):
         self.log = logger.get_log(Archive.__name__)
@@ -52,12 +57,12 @@ class Archive():
         self.handle = handle
         self.mode = mode
 
-    def compact(self):
+    def compact(self, listfile):
         if self.mode != 'w':
             msg = 'Archive is not writable'.format(self.mode)
             self.log.error(msg)
             raise io.UnsupportedOperation(msg)
-        success = stormlib.SFileCompactArchive(self.handle, "foof.txt".encode('ascii'), 0)
+        success = stormlib.SFileCompactArchive(self.handle, listfile.encode('ascii'), 0)
         return success
 
     def extract_list_file(self, outfile):
@@ -99,19 +104,67 @@ class Archive():
             self.extract_file(f, outfile)
         return files
 
+    def add_file(self, infile, name, replace_existing=True):
+        """Adds a local file to the archive with the given name.
 
+        By default, if there is a file in the archive with `name`, it gets replaced by
+        the new file.
+
+        Note when adding a new file name to the archive that did not exist before,
+        the list file must be updated with the new file in order to allow compaction of the archive to succeed.
+
+        :param infile:
+        :param name:
+        :param replace_existing:
+        :return:
+        """
+        flags = stormlib.MPQ_FILE_COMPRESS
+        if replace_existing:
+            flags += stormlib.MPQ_FILE_REPLACEEXISTING
+        compression = stormlib.MPQ_COMPRESSION_ZLIB
+        success = stormlib.SFileAddFileEx(self.handle, infile.encode('ascii'), name.encode('ascii'), flags,
+                                          compression, compression)
+        return success
+
+
+def add_file_example():
+    i = 'data/test/Test-new.w3x'
+    addme = 'data/test/foo.txt'
+    listfile = 'data/test/list.txt'
+    outdir = 'data/test/extract-new'
+    with open_archive(i, 'r') as a:
+        a.extract_list_file(listfile)
+        files = [x for x in read_listfile(listfile)]
+        if addme not in files:
+            files.append(addme)
+        write_listfile(files, listfile)
+    with open_archive(i, 'w') as a:
+        a.add_file(addme, addme)
+        a.extract_all_files(outdir, listfile)
+        if not a.compact(listfile):
+            print('Failed to compact')
 
 
 
 if __name__ == '__main__':
-    i = 'data/test/Test.w3x'
-    mode = 'r'
-    with open_archive(i, mode) as handle:
-        a = Archive(i, handle, mode)
-        a.extract_list_file('foo.txt')
-        a.extract_jass('foof.jass')
-        a.extract_terrain('foof.w3e')
-        a.extract_all_files('extract', 'foo.txt')
+    add_file_example()
+    # i = 'data/test/Test-new.w3x'
+    # mode = 'w'
+    # with open_archive(i, 'w') as handle:
+    #     a = Archive(i, handle, 'w')
+    #     # if not a.add_file('readme.md', 'readme.md'):
+    #     #     print('Failed to add file')
+    #     listfile = 'list.txt'
+    #     if not a.extract_list_file(listfile):
+    #         print('Failed to extract list file')
+    #     # print(stormlib.STORM['GetLastError']())
+    #     if not a.compact(listfile):
+    #         print('Failed to compact')
+    #
+    # with open_archive(i, 'r') as handle:
+    #     a = Archive(i, handle, 'r')
+    #     a.extract_list_file('foo.txt')
+    #     a.extract_all_files('extract', 'foo.txt')
 
 
 
