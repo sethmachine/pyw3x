@@ -34,19 +34,23 @@ def unpack_water_and_edge(water_and_edge):
              boundary: whether tile is on the map edge
     """
     water_height = water_and_edge & 0x3FFF #first 14 bits
-    boundary = water_and_edge & 0xC000 #15th bit
+    # boundary = (water_and_edge & 0xC000) >> 15 #16th bit
+    boundary = '{:016b}'.format(water_and_edge)[:2]
     return water_height, boundary
 
 def pack_water_and_edge(water_height, boundary):
     """
     """
     # first 14 bits
-    s = '{:14b}'.format(water_height)
-    # 15th bit
-    s = '{:01b}'.format(boundary) + s
+    s = boundary + '{:14b}'.format(water_height)
+    # # 15th bit
+    # if boundary != 0:
+    #     s = '00' + s
+    # else:
+    #     s = '01' + s
+    # s = '{:01b}'.format(boundary) + s
     #16th bit is always 0?
-    s = '0' + s
-    s = s.replace(' ', '')
+    # s = '0' + s
     return int(s, 2)
 
 def unpack_texture_and_flags(texture_and_flags):
@@ -67,12 +71,12 @@ def unpack_texture_and_flags(texture_and_flags):
     :param texture_and_flags:
     :return:
     """
-    ground_texture = texture_and_flags & 0x0F # first 4 bits
-    flags = texture_and_flags & 0xF0 # last 4 bits
-    ramp_flag = flags & 0X0010
-    blight_flag = flags & 0x0020
-    water_flag = flags & 0x0040
-    boundary_flag_2 = flags & 0x4000
+    ground_texture = texture_and_flags & 0b00001111 # first 4 bits
+    # flags = texture_and_flags & 0xF0 # last 4 bits
+    ramp_flag = texture_and_flags & 0b00010000
+    blight_flag = texture_and_flags & 0b00100000
+    water_flag = texture_and_flags & 0b01000000
+    boundary_flag_2 = texture_and_flags & 0b10000000
     return ground_texture, ramp_flag, blight_flag, water_flag, boundary_flag_2
 
 def pack_texture_and_flags(ground_texture, ramp_flag, blight_flag, water_flag, boundary_flag_2):
@@ -101,8 +105,8 @@ def unpack_variation(variation):
     :param variation:
     :return:
     """
-    ground_variation = variation & 31
-    cliff_variation = (variation & 224) >> 5
+    ground_variation = variation & 0b00011111
+    cliff_variation = (variation & 0b11100000) >> 5
     return ground_variation, cliff_variation
 
 def pack_variation(ground_variation, cliff_variation):
@@ -134,37 +138,86 @@ def unpack_misc(misc):
     # last 4 bits
     # shifted because cliff textures are 0 - 15 valued
     # i.e. only 16 possible values
-    cliff_texture = (misc & 0xF0) >> 4
+    cliff_texture = (misc & 0b11110000) >> 4
     # first 4 bits
-    layer_height = misc & 0x0F
+    layer_height = misc & 0b00001111
     return cliff_texture, layer_height
 
 def pack_misc(cliff_texture, layer_height):
-    print('IN MISC')
     # first 4 bits is cliff layer height
     # need to undo 4 bit shift operation
     # mask was 1111 0000
     p1 = '{:04b}'.format(layer_height)
     # last 4 is cliff texture
     p2 = '{:04b}'.format(cliff_texture)
-    print(p2)
-    print(p1)
     s = p2 + p1
     #dont interpret last bit since it's signed
-    ns = s[:-1]
-    if s[-1] == 1:
-        ns = '-' + ns
-    else:
-        ns = '+' + ns
-    print(s, ns)
     return int(s, 2)
 
+class Tile():
+    def __init__(self, ground_height=None, water_height=None, map_edge_flag=None,
+                 ground_texture=None, ramp_flag=None, blight_flag=None,
+                 water_flag = None, boundary_flag=None, ground_variation=None,
+                 cliff_variation=None, cliff_texture=None, layer_height=None):
+        """Representation of a Warcraft III map terrain tile.
+
+        :param ground_height: Elevation of the tile.  Ground level is 8192.  Max is 2 * 8192, min is 0.
+        :param water_height: Elevation of water on the tile.  Ground level is -89.6.
+        :param map_edge_flag: 0 or 1.  Whether a shadow is generated on the tile (i.e. edge of map)
+        :param ground_texture: Integer from 0 to 15 (4 bits).  Determines ground textures used.
+        :param ramp_flag: 0 or 1.  Whether a ramp is set between two layers.
+        :param blight_flag: 0 or 1.  Whether blight is on top of the tile (Undead ground).
+        :param water_flag: 0 or 1.  Enables water on the tile.
+        :param boundary_flag: 0 or 1.  Used on "camera bounds" area.  Usually set by World Editor "boundary" tool.
+        :param ground_variation: Integer 0 to 31 (5 bits).  Determines which variation of texture that is used to reduce repetition.
+        :param cliff_variation: Integer 0 to 7 (3 bits).  Determines which variation of cliff texture to use (?).
+        :param cliff_texture: Integer 0 to 15 (4 bits).  Determines which cliff texture is used.
+        :param layer_height: Integer 0 to 15 (4 bits).  Layer heigth changes when using cliffs.
+        """
+        self.ground_height = ground_height
+        self.water_height = water_height
+        self.map_edge_flag = map_edge_flag
+        self.ground_texture = ground_texture
+        self.ramp_flag = ramp_flag
+        self.blight_flag = blight_flag
+        self.water_flag = water_flag
+        self.boundary_flag = boundary_flag
+        self.ground_variation = ground_variation
+        self.cliff_variation = cliff_variation
+        self.cliff_texture = cliff_texture
+        self.layer_height = layer_height
+
+    def pack(self):
+        data = collections.OrderedDict()
+        data['ground_height'] = self.ground_height
+        data['water_and_edge'] = pack_water_and_edge(self.water_height, self.map_edge_flag)
+        data['texture_and_flags'] = pack_texture_and_flags(self.ground_texture, self.ramp_flag,
+                                                           self.blight_flag, self.water_flag, self.boundary_flag)
+        data['variation'] = pack_variation(self.ground_variation, self.cliff_variation)
+        data['misc'] = pack_misc(self.cliff_texture, self.layer_height)
+        return data
+
+    def unpack(self, ground_height, water_and_edge, texture_and_flags, variation, misc):
+        self.ground_height = ground_height
+        self.water_height, self.map_edge_flag = unpack_water_and_edge(water_and_edge)
+        self.ground_texture, self.ramp_flag, self.blight_flag, self.water_flag, self.boundary_flag = unpack_texture_and_flags(texture_and_flags)
+        self.ground_variation, self.cliff_variation = unpack_variation(variation)
+        self.cliff_texture, self.layer_height = unpack_misc(misc)
+
+    def unpack_dict(self, data):
+        gh = data['ground_height']
+        we = data['water_and_edge']
+        tf = data['texture_and_flags']
+        vr = data['variation']
+        misc = data['misc']
+        self.unpack(gh, we, tf, vr, misc)
+
 def test_packing(tile):
-    nwe = pack_water_and_edge(tile['water_height'], tile['boundary'])
+    nwe = pack_water_and_edge(tile['water_height'], tile['map_edge'])
     assert nwe == tile['water_and_edge']
     w, b = unpack_water_and_edge(nwe)
     assert w == tile['water_height']
-    assert b == tile['boundary']
+    assert b == tile['map_edge']
     ntf = pack_texture_and_flags(tile['ground_texture'], tile['ramp'], tile['blight'],
                                  tile['water'], tile['boundary'])
     assert ntf == tile['texture_and_flags']
@@ -180,19 +233,40 @@ def test_packing(tile):
     assert gv == tile['ground_variation']
     assert cv == tile['cliff_variation']
     nmisc = pack_misc(tile['cliff_texture'], tile['layer_height'])
-    print(nmisc)
     assert nmisc == tile['misc']
+    ct, lh = unpack_misc(nmisc)
+    assert ct == tile['cliff_texture']
+    assert lh == tile['layer_height']
 
+def test_packing_2(tile):
+    new_tile = Tile()
+    new_tile.unpack(tile['ground_height'], tile['water_and_edge'], tile['texture_and_flags'],
+                    tile['variation'], tile['misc'])
+    assert new_tile.water_height == tile['water_height']
+    assert new_tile.map_edge_flag == tile['map_edge']
+    assert new_tile.ground_texture == tile['ground_texture']
+    assert new_tile.ramp_flag == tile['ramp']
+    assert new_tile.blight_flag == tile['blight']
+    assert new_tile.water_flag == tile['water']
+    assert new_tile.boundary_flag == tile['boundary']
+    assert new_tile.ground_variation == tile['ground_variation']
+    assert new_tile.cliff_variation == tile['cliff_variation']
+    assert new_tile.cliff_texture == tile['cliff_texture']
+    assert new_tile.layer_height == tile['layer_height']
+    out = new_tile.pack()
+    for key in out:
+        assert out[key] == tile[key]
+
+def test_tile_packing_unpacking(infile):
+    tiles = json.load(open(infile, 'r'))
+    for i, tile in enumerate(tiles):
+        try:
+            test_packing(tile)
+            test_packing_2(tile)
+        except AssertionError:
+            print('Failed on tile #{}'.format(i))
+            raise AssertionError('Failed on tile #{}'.format(i))
+    print('Passed all tests.')
 
 if __name__ == '__main__':
-    i = 'data/test/tiles.json'
-    t = json.load(open(i, 'r'))
-    print(json.dumps(t[0], indent=1))
-    for i,x in enumerate(t):
-        try:
-            test_packing(x)
-        except AssertionError:
-            print('Failed')
-            print(json.dumps(x, indent=1))
-            print(i, x)
-            break
+    test_tile_packing_unpacking('data/test/glacial-tiles.json')
