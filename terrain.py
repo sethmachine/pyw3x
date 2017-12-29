@@ -10,6 +10,17 @@ import numpy
 
 MAGIC_NUMBER = 'W3E!'
 
+def iter_tiles(tiles):
+    outer = list(tiles.keys())
+    outer.sort()
+    for i in outer:
+        inner = list(tiles.keys())
+        inner.sort()
+        for j in outer:
+            yield tiles[i][j]
+
+CORNER_W3E_DATA = ['ground_height', 'water_and_edge', 'texture_and_flags', 'variation', 'misc']
+
 class Corner():
     def __init__(self):
         self.ground_height = None
@@ -17,9 +28,57 @@ class Corner():
         self.texture_and_flags = None
         self.variation = None
         self.misc = None
+        self.water_height = None
+        self.map_edge = None
+        self.ground_texture = None
+        self.ramp = None
+        self.blight = None
+        self.water = None
+        self.boundary = None
+        self.ground_variation = None
+        self.cliff_variation = None
+        self.cliff_texture = None
+        self.layer_height = None
+
+    def parse_water_and_edge(self):
+        self.water_height = self.water_and_edge & 0x3FFF
+        self.map_edge = self.water_and_edge & 0xC000
+
+    def parse_texture_and_flags(self):
+        self.ground_texture = self.texture_and_flags & 0x0F
+        flags = self.texture_and_flags & 0xF0
+        self.ramp = flags & 0X0010
+        self.blight = flags & 0x0020
+        self.water = flags & 0x0040
+        self.boundary = flags & 0x4000
+
+    def parse_variation(self):
+        self.ground_variation = self.variation & 31
+        self.cliff_variation = (self.variation & 224) >> 5
+
+    def parse_misc(self):
+        self.cliff_texture = (self.misc & 0xF0) >> 4
+        self.layer_height = self.misc & 0x0F
+
+    def parse(self):
+        self.parse_water_and_edge()
+        self.parse_texture_and_flags()
+        self.parse_variation()
+        self.parse_misc()
 
     def to_json(self):
+        data = vars(self)
+        out = collections.OrderedDict()
+        for key in data:
+            if key in CORNER_W3E_DATA:
+                out[key] = data[key]
+        return out
+
+    def to_data(self, outfile):
         return vars(self)
+
+    def __repr__(self):
+        return json.dumps(vars(self), indent=1)
 
 class Terrain():
     def __init__(self, infile):
@@ -37,9 +96,8 @@ class Terrain():
         self.horizontal_offset = None
         self.vertical_offset = None
         self.tiles = None
-
-
-
+        self.corners = None
+        
     def read(self):
         with open(self.file, 'rb') as f:
             magic_number = f.read(4).decode('utf-8') #4 bytes (=4 chars)
@@ -69,6 +127,7 @@ class Terrain():
 
     def _read_tilepoints(self, filehandle):
         self.tiles = collections.defaultdict(lambda: collections.defaultdict(dict))
+        self.corners = collections.defaultdict(lambda: collections.defaultdict(dict))
         # add 1 because a map of 256 x 256 tiles will have 257 x 257 corners.
         for i in range(0, self.height):
             for j in range(0, self.width):
@@ -78,7 +137,9 @@ class Terrain():
                 corner.texture_and_flags = struct.unpack('b', filehandle.read(1))[0]
                 corner.variation = struct.unpack('b', filehandle.read(1))[0]
                 corner.misc = struct.unpack('b', filehandle.read(1))[0]
-                self.tiles[i][j] = corner.to_json()
+                corner.parse()
+                self.corners[i][j] = corner.to_json()
+                self.tiles[i][j] = corner
 
     def write(self, outfile=None):
         if not outfile:
@@ -100,7 +161,7 @@ class Terrain():
             f.write(struct.pack('f', self.vertical_offset))
             for i in range(0, self.height):
                 for j in range(0, self.width):
-                    corner = self.tiles[i][j]
+                    corner = self.corners[i][j]
                     f.write(struct.pack('h', corner['ground_height']))
                     f.write(struct.pack('h', corner['water_and_edge']))
                     f.write(struct.pack('b', corner['texture_and_flags']))
@@ -110,11 +171,16 @@ class Terrain():
 
 
     def to_json(self):
-        return vars(self)
+        data = vars(self)
+        out = collections.OrderedDict()
+        for key in data:
+            if key != 'tiles':
+                out[key] = data[key]
+        return out
 
     def describe(self):
-        print(json.dumps(vars(self), indent=1))
-
+        data = self.to_json()
+        print(json.dumps(data, indent=1))
 
 
 
@@ -124,5 +190,10 @@ if __name__ == '__main__':
     t = Terrain(i)
     d = t.read()
     t.describe()
-    t.write('data/test/foof.w3e')
-    json.dump(t.to_json(), open('w3e.json', 'w'), indent=1)
+    t.write('data/test/bar.w3e')
+    json.dump(t.to_json(), open('data/test/w3e.json', 'w'), indent=1)
+    y = iter_tiles(t.tiles)
+    d = [vars(x) for x in y]
+    json.dump(d, open('tiles.json', 'w'), indent=1)
+
+
