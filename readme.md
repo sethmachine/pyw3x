@@ -22,7 +22,7 @@ This wrapper uses the macOS DLL, `libStorm.dylib`.  Build instructions and stati
 on the [StormLib GitHub repository](https://github.com/ladislav-zezula/StormLib).  
 2.  Python 3.6.x (not tested on Python 2.7.x).
 3.  Python requirements (use `pip install -r requirements.txt`).
-
+4.  Windows 64 or macOS operating systems.  StormLib DLLs were copied from: https://github.com/peq/jMpq/tree/master/src/main/resources
 
 
 ## Usage
