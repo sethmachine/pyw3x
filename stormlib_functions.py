@@ -5,11 +5,22 @@
 
 import ctypes
 import os
+import sys
 
 SCRIPT_PATH = os.path.dirname(__file__)
 MAC_STORM = os.path.join(SCRIPT_PATH, 'data/storm/libStorm.dylib')
+WIN_64_STORM = os.path.join(SCRIPT_PATH, 'data/storm/win-64/Storm.dll')
+STORM_DLL = ''
 
-STORM = ctypes.cdll.LoadLibrary(MAC_STORM)
+# determine OS
+if os.name == 'nt': #assume all Windows is 64 bit, no 32 bit support
+    STORM_DLL = WIN_64_STORM
+elif os.name == 'posix': #macOS hopefully
+    STORM_DLL = MAC_STORM
+else:
+    sys.stderr.write('Unsupported operating system detected {}.  Use macOS or Windows 64 bit to use StormLib.\n'.format(os.name))
+
+STORM = ctypes.cdll.LoadLibrary(STORM_DLL)
 STORM_VERBOSE = False
 
 def _errcheck(result, func, args):

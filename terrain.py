@@ -236,7 +236,7 @@ if __name__ == '__main__':
     import archive
     import terrain_tiles
     i = 'data/test/w3x/(2)GlacialThaw.w3x'
-    copyi = 'data/test/GlacialCopy2.w3x'
+    copyi = 'data/test/GlacialCopy3.w3x'
     if not os.path.exists(copyi):
         shutil.copyfile(i, copyi)
     listfile = 'data/test/glacial-list.txt'
@@ -258,7 +258,7 @@ if __name__ == '__main__':
         tile.ground_variation = new_variation
         tile.cliff_texture = random.randint(0, 15)
         tile.cliff_variation = random.randint(0, 7)
-        tile.ground_height = random.randint(0, 8192 * 2)
+        # tile.ground_height = random.randint(0, 8192 * 2)
         # tile.layer_height = 2
     new_corners = terrain_tiles_to_corners(new_tiles)
     t.write('data/test/glacial-mod2.w3e', tiles=new_corners)
