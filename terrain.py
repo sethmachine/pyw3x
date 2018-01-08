@@ -212,6 +212,8 @@ def tiles_to_terrain_tiles(tiles):
     out = collections.defaultdict(lambda: collections.defaultdict(dict))
     for i, j, tile in iter_tiles_keys(tiles):
         new_tile = terrain_tiles.Tile()
+        new_tile.i = i
+        new_tile.j = j
         new_tile.unpack(tile.ground_height, tile.water_and_edge, tile.texture_and_flags,
                         tile.variation, tile.misc)
         out[i][j] = new_tile
@@ -237,7 +239,7 @@ if __name__ == '__main__':
     import terrain_tiles
     i = 'data/test/w3x/(2)GlacialThaw.w3x'
     copyi = 'data/test/GlacialCopy3.w3x'
-    if not os.path.exists(copyi):
+    if os.path.exists(copyi):
         shutil.copyfile(i, copyi)
     listfile = 'data/test/glacial-list.txt'
     with archive.open_archive(copyi, 'r') as a:
@@ -259,7 +261,8 @@ if __name__ == '__main__':
         tile.cliff_texture = random.randint(0, 15)
         tile.cliff_variation = random.randint(0, 7)
         # tile.ground_height = random.randint(0, 8192 * 2)
-        # tile.layer_height = 2
+        # tile.ground_height = 8192
+        # tile.layer_height = 10
     new_corners = terrain_tiles_to_corners(new_tiles)
     t.write('data/test/glacial-mod2.w3e', tiles=new_corners)
     with archive.open_archive(copyi, 'w') as a:
@@ -267,4 +270,7 @@ if __name__ == '__main__':
         a.extract_all_files('glacial-mod', listfile)
         if not a.compact(listfile):
             print('Failed to compact')
+    import wc3_runner
+    w = wc3_runner.Wc3_Runner()
+    w.run_map(copyi, 'foobar', replace_existing=True)
 

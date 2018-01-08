@@ -158,7 +158,7 @@ class Tile():
     def __init__(self, ground_height=None, water_height=None, map_edge_flag=None,
                  ground_texture=None, ramp_flag=None, blight_flag=None,
                  water_flag = None, boundary_flag=None, ground_variation=None,
-                 cliff_variation=None, cliff_texture=None, layer_height=None):
+                 cliff_variation=None, cliff_texture=None, layer_height=None, i=None, j=None):
         """Representation of a Warcraft III map terrain tile.
 
         :param ground_height: Elevation of the tile.  Ground level is 8192.  Max is 2 * 8192, min is 0.
@@ -173,6 +173,8 @@ class Tile():
         :param cliff_variation: Integer 0 to 7 (3 bits).  Determines which variation of cliff texture to use (?).
         :param cliff_texture: Integer 0 to 15 (4 bits).  Determines which cliff texture is used.
         :param layer_height: Integer 0 to 15 (4 bits).  Layer heigth changes when using cliffs.
+        :param i: x coordinate
+        :param j: y coordinate
         """
         self.ground_height = ground_height
         self.water_height = water_height
@@ -186,6 +188,8 @@ class Tile():
         self.cliff_variation = cliff_variation
         self.cliff_texture = cliff_texture
         self.layer_height = layer_height
+        self.i = i
+        self.j = j
 
     def pack(self):
         data = collections.OrderedDict()

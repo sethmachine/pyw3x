@@ -41,6 +41,8 @@ class Wc3_Runner():
     def run(self, window=True):
         """Launches Warcraft III Frozen Throne in windowed mode (default).
 
+        WC3 is launched in background process.  Use `self.close()` to terminate.
+
         :param window:
         :return:
         """
@@ -57,6 +59,8 @@ class Wc3_Runner():
 
     def run_map(self, infile, outdir, window=True, replace_existing=True):
         """Map file must be located in WC3 User maps directory.  If not it will be copied over in a temp directory.
+
+        WC3 is launched in background process.  Use `self.close()` to terminate.
 
         :param infile:
         :param window:
@@ -100,6 +104,9 @@ class Wc3_Runner():
         self.close()
 
     def exit(self):
+        self.close()
+
+    def kill(self):
         self.close()
 
     def __repr__(self):
