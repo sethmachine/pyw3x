@@ -216,6 +216,9 @@ class Tile():
         misc = data['misc']
         self.unpack(gh, we, tf, vr, misc)
 
+    def __repr__(self):
+        return json.dumps(vars(self), indent=1)
+
 def test_packing(tile):
     nwe = pack_water_and_edge(tile['water_height'], tile['map_edge'])
     assert nwe == tile['water_and_edge']
