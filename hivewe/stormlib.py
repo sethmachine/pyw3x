@@ -7,8 +7,8 @@ import os
 
 SCRIPT_PATH = os.path.dirname(__file__)
 
-from stormlib_constants import *
-from stormlib_functions import *
+from hivewe.stormlib_constants import *
+from hivewe.stormlib_functions import *
 
 if __name__ == '__main__':
     i = os.path.join(SCRIPT_PATH, 'data/test/Test.w3x')
