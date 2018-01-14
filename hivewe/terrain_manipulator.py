@@ -27,6 +27,9 @@ class Terrain_Manipulator():
         self.listfile = os.path.join(outdir, LIST_FILE)
         self.w3e = os.path.join(outdir, TERRAIN_FILE)
         shutil.copyfile(self.basemap, self.outmap)
+        self.terrain = None
+        self.tiles = None
+
 
     def _make_outdir(self):
         if not os.path.exists(self.outdir):
@@ -41,6 +44,12 @@ class Terrain_Manipulator():
             a.extract_terrain(self.w3e)
             a.extract_list_file(self.listfile)
 
+    def read_terrain(self):
+        self.terrain = terrain.Terrain(self.w3e)
+        self.terrain.read()
+        self.tiles = terrain.tiles_to_terrain_tiles(self.terrain.tiles)
+
+
     def mod_terrain(self, callback):
         """Applies the callback to the iteration of all available tiles.
 
@@ -49,12 +58,9 @@ class Terrain_Manipulator():
         :param callback:
         :return:
         """
-        ter = terrain.Terrain(self.w3e)
-        ter.read()
-        new_tiles = terrain.tiles_to_terrain_tiles(ter.tiles)
-        callback(new_tiles)
-        new_corners = terrain.terrain_tiles_to_corners(new_tiles)
-        ter.write(self.w3e, tiles=new_corners)
+        callback(self.tiles)
+        new_corners = terrain.terrain_tiles_to_corners(self.tiles)
+        self.terrain.write(self.w3e, tiles=new_corners)
 
     def write_new_terrain(self):
         with archive.open_archive(self.outmap, 'w') as a:
@@ -131,6 +137,7 @@ if __name__ == '__main__':
     basemap = 'data/test/w3x/(12)EmeraldGardens.w3x'
     tm = Terrain_Manipulator(basemap, 'foobar', 'foobar-out')
     tm.extract_assets()
+    tm.read_terrain()
     cb = random_tile_textures
     #1, 96 splits map in middle for 192 tiles aka 256 x 256
     cb = tile_column_closure(1, 96) #0 based will have odd number of rows with 192 tiles (0 - 192)
