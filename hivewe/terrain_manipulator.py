@@ -8,10 +8,10 @@ import os
 import shutil
 import random
 
-import archive
-import terrain
-import terrain_tiles
-import wc3_runner
+import hivewe.archive as archive
+import hivewe.terrain as terrain
+import hivewe.terrain_tiles as terrain_files
+import hivewe.wc3_runner as wc3_runner
 
 WC3_MAP_EXTENSION = '.w3x'
 TERRAIN_FILE = 'war3map.w3e'

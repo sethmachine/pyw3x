@@ -7,8 +7,8 @@ import contextlib
 import io
 import os
 
-import logger
-import stormlib
+import hivewe.logger as logger
+import hivewe.stormlib as stormlib
 
 STORM_LOG = logger.get_log('stormlib')
 
