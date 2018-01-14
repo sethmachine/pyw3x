@@ -208,7 +208,6 @@ def test_read_write():
     json.dump(d, open('data/test/tiles.json', 'w'), indent=1)
 
 def tiles_to_terrain_tiles(tiles):
-    import terrain_tiles
     out = collections.defaultdict(lambda: collections.defaultdict(dict))
     for i, j, tile in iter_tiles_keys(tiles):
         new_tile = terrain_tiles.Tile()
