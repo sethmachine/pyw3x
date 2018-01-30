@@ -4,6 +4,7 @@
 
 import multiprocessing
 import os
+import platform
 import shutil
 import subprocess
 import uuid
@@ -12,7 +13,20 @@ import psutil
 
 WC3_X86_EXE_WIN_10 = "C:\\Program Files (x86)\\Warcraft III\\Warcraft III.exe"
 WC3_MAP_DIR_WIN_10 = "C:\\Users\\sdwor\\OneDrive\\Documents\\Warcraft III\\Maps"
+
+WC3_MAC_EXE = "/Applications/Warcraft III/Warcraft III.app/Contents/MacOS/Warcraft III"
+WC3_MAC_MAP_DIR = "/Applications/Warcraft III/Maps"
+
 OUTDIR = os.path.join(WC3_MAP_DIR_WIN_10, 'wc3-runner')
+
+def get_wc3_by_os():
+    platform_name = platform.system()
+    if platform_name == 'Windows':
+        return WC3_X86_EXE_WIN_10, WC3_MAP_DIR_WIN_10
+    elif platform_name == 'Darwin':
+        return WC3_MAC_EXE, WC3_MAC_MAP_DIR
+    else:
+        raise OSError("Unsupported operating system: {}".format(platform_name))
 
 def _run(args):
     p = subprocess.Popen(args, stdout=subprocess.PIPE, shell=False)
@@ -114,5 +128,6 @@ class Wc3_Runner():
 
 
 if __name__ == '__main__':
-    w = Wc3_Runner()
+    b, d = get_wc3_by_os()
+    w = Wc3_Runner(b, d)
     p = w.run_map('data/test/GlacialCopy4.w3x', 'foobar', replace_existing=True)
