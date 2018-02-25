@@ -142,7 +142,9 @@ if __name__ == '__main__':
     #1, 96 splits map in middle for 192 tiles aka 256 x 256
     cb = tile_column_closure(1, 96) #0 based will have odd number of rows with 192 tiles (0 - 192)
     cb = tile_rectangle_closure(80 + 30, 100 + 30, 80, 100, single_texture_closure(10, 10))
+    cb = random_tile_textures
     tm.mod_terrain(callback=cb)
     tm.write_new_terrain()
-    w = wc3_runner.Wc3_Runner()
+    b, d = wc3_runner.get_wc3_by_os()
+    w = wc3_runner.Wc3_Runner(b, d)
     w.run_map(tm.outmap, 'terrain-mod')
