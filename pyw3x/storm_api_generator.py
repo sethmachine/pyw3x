@@ -22,7 +22,7 @@ import json
 import os
 import re
 
-from hivewe.stormlib_constants import *
+from pyw3x.stormlib_constants import *
 
 STORM_LIB_HEADER = 'data/storm/StormLib.h'
 MAC_STORM = 'data/storm/libStorm.dylib'

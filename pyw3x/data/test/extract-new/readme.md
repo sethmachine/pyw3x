@@ -1,6 +1,4 @@
-# Pyw3x (Python)
-
-This project provides utilities to manipulate Warcraft III Map files (.w3x extension) based on translating existing repositories.
+# Hive World Editor (Python)
 
 This project is a Python wrapper around the [StormLib C++ API](https://github.com/ladislav-zezula/StormLib) 
 and also ports C++ code from the [HiveWE project](https://github.com/stijnherfst/HiveWE) to parse Warcraft III
@@ -24,7 +22,7 @@ This wrapper uses the macOS DLL, `libStorm.dylib`.  Build instructions and stati
 on the [StormLib GitHub repository](https://github.com/ladislav-zezula/StormLib).  
 2.  Python 3.6.x (not tested on Python 2.7.x).
 3.  Python requirements (use `pip install -r requirements.txt`).
-4.  Windows 64 or macOS operating systems.  StormLib DLLs were copied from: https://github.com/peq/jMpq/tree/master/src/main/resources
+
 
 
 ## Usage
@@ -43,7 +41,8 @@ import archive
 infile = 'data/test/Test.w3x'
 mode = 'r' #use 'w' to enable writing
 
-with archive.open_archive(infile, mode) as a:
+with archive.open_archive(infile, mode) as handle:
+    a = archive.Archive(infile, handle, mode)
     listfile = 'list.txt'
     a.extract_list_file(listfile)
     outdir = 'archive-extracted'

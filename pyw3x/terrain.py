@@ -6,7 +6,7 @@ import collections
 import json
 import struct
 
-import hivewe.terrain_tiles as terrain_tiles
+import pyw3x.terrain_tiles as terrain_tiles
 
 MAGIC_NUMBER = 'W3E!'
 

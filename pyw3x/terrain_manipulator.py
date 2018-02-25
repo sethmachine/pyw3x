@@ -8,10 +8,10 @@ import os
 import shutil
 import random
 
-import hivewe.archive as archive
-import hivewe.terrain as terrain
-import hivewe.terrain_tiles as terrain_files
-import hivewe.wc3_runner as wc3_runner
+import pyw3x.archive as archive
+import pyw3x.terrain as terrain
+import pyw3x.terrain_tiles as terrain_files
+import pyw3x.wc3_runner as wc3_runner
 
 WC3_MAP_EXTENSION = '.w3x'
 TERRAIN_FILE = 'war3map.w3e'
@@ -142,7 +142,7 @@ if __name__ == '__main__':
     #1, 96 splits map in middle for 192 tiles aka 256 x 256
     cb = tile_column_closure(1, 96) #0 based will have odd number of rows with 192 tiles (0 - 192)
     cb = tile_rectangle_closure(80 + 30, 100 + 30, 80, 100, single_texture_closure(10, 10))
-    cb = random_tile_textures
+    # cb = random_tile_textures
     tm.mod_terrain(callback=cb)
     tm.write_new_terrain()
     b, d = wc3_runner.get_wc3_by_os()
