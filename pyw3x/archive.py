@@ -62,7 +62,10 @@ class Archive():
             msg = 'Archive is not writable'.format(self.mode)
             self.log.error(msg)
             raise io.UnsupportedOperation(msg)
-        success = stormlib.SFileCompactArchive(self.handle, listfile.encode('ascii'), 0)
+        if listfile is None:
+            success = stormlib.SFileCompactArchive(self.handle, None, 0)
+        else:
+            success = stormlib.SFileCompactArchive(self.handle, listfile.encode('ascii'), 0)
         return success
 
     def extract_list_file(self, outfile):
@@ -99,7 +102,9 @@ class Archive():
         for f in files:
             parent = os.path.dirname(f)
             if parent:
-                os.makedirs(os.path.join(outdir, parent))
+                nested_dir = os.path.join(outdir, parent)
+                if not os.path.exists(nested_dir):
+                    os.makedirs(nested_dir)
             outfile = os.path.join(outdir, f)
             self.extract_file(f, outfile)
         return files
@@ -130,37 +135,42 @@ class Archive():
 def add_file_example():
     i = 'data/test/Test-new.w3x'
     addme = 'data/test/foo.txt'
-    listfile = 'data/test/list.txt'
-    outdir = 'data/test/extract-new'
+    listfile = 'data/test/list-new5555.txt'
+    outdir = 'data/test/extract-new4'
     with open_archive(i, 'r') as a:
         a.extract_list_file(listfile)
         files = [x for x in read_listfile(listfile)]
         if addme not in files:
             files.append(addme)
         write_listfile(files, listfile)
-    with open_archive(i, 'w') as a:
-        a.add_file(addme, addme)
-        a.extract_all_files(outdir, listfile)
-        if not a.compact(listfile):
-            print('Failed to compact')
-
+    # with open_archive(i, 'w') as a:
+    #     a.add_file(addme, addme)
+    #     a.extract_all_files(outdir, listfile)
+    #     if not a.compact(listfile):
+    #         print('Failed to compact')
 
 
 if __name__ == '__main__':
-    add_file_example()
-    # i = 'data/test/Test-new.w3x'
-    # mode = 'w'
-    # with open_archive(i, 'w') as handle:
-    #     a = Archive(i, handle, 'w')
-    #     # if not a.add_file('readme.md', 'readme.md'):
-    #     #     print('Failed to add file')
-    #     listfile = 'list.txt'
-    #     if not a.extract_list_file(listfile):
-    #         print('Failed to extract list file')
-    #     # print(stormlib.STORM['GetLastError']())
-    #     if not a.compact(listfile):
-    #         print('Failed to compact')
+    # add_file_example()
+    infile = '/users/sethmachine/desktop/amplayer5beta.scx'
+    with open_archive(infile, 'r') as a:
+        # a = Archive(infile, handle, 'r')
+        a.extract_file('staredit\\scenario.chk', 'bar/foof.chk')
+        # a.extract_list_file('data/sc-listfile.txt')
     #
+    # i = 'data/test/Test-new.w3x'
+    # # mode = 'w'
+    # # with open_archive(i, 'w') as handle:
+    # #     a = Archive(i, handle, 'w')
+    # #     # if not a.add_file('readme.md', 'readme.md'):
+    # #     #     print('Failed to add file')
+    # #     listfile = 'list.txt'
+    # #     if not a.extract_list_file(listfile):
+    # #         print('Failed to extract list file')
+    # #     # print(stormlib.STORM['GetLastError']())
+    # #     if not a.compact(listfile):
+    # #         print('Failed to compact')
+    # #
     # with open_archive(i, 'r') as handle:
     #     a = Archive(i, handle, 'r')
     #     a.extract_list_file('foo.txt')
