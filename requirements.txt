@@ -1,4 +1,4 @@
 certifi==2017.11.5
-numpy==1.13.3
+numpy==1.22.0
 psutil==5.4.3
 wincertstore==0.2
